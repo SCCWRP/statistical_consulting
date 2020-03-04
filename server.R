@@ -87,6 +87,11 @@ server <- function(input, output, session) {
       plot(calibration_curve[["residualsByLat"]])})
     
     
+    output$residualsByLong = renderPlot({
+      
+      plot(calibration_curve[["residualsByLong"]])})
+    
+    
     reference=input$reference_metal
     
     if(input$debug_mode){

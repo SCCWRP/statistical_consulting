@@ -306,9 +306,14 @@ with(calibration.env,{
          
          
       residualsByLat =  ggplot(predicted_PPM,aes(lat,Residual)) +
-                                geom_point() +
-                                geom_smooth(method = lm,se=F)+
-                                labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
+        geom_point() +
+        geom_smooth(method = lm,se=F)+
+        labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
+      
+      residualsByLong =  ggplot(predicted_PPM,aes(long,Residual)) +
+        geom_point() +
+        geom_smooth(method = lm,se=F)+
+        labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
         
          
     return_data = list()
@@ -317,6 +322,7 @@ with(calibration.env,{
     return_data[["pointsPlot"]] = return_pointsPlot
     return_data[["residualsPlot"]] = residualsPlot
     return_data[["residualsByLat"]] = residualsByLat
+    return_data[["residualsByLong"]] = residualsByLong
     return_data[["model"]] = model
     return(return_data)
     

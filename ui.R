@@ -33,7 +33,9 @@ ui <- fluidPage(
                          h4("Residuals By Fit"),
                          plotOutput("residualsPlot"),
                          h4("Residuals By Latitude"),
-                         plotOutput("residualsByLat")
+                         plotOutput("residualsByLat"),
+                         h4("Residuals By Longitude"),
+                         plotOutput("residualsByLong")
                          ),
                 tabPanel("Table", h3("Model Summary"),
                          fluidRow(verbatimTextOutput("TraceModelSummary")),
