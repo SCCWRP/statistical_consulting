@@ -216,6 +216,16 @@ with(calibration.env,{
 
 with(calibration.env,{
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
   # function calibration_plot generates the necessary information about the
   # calibration data of a trace metal against a contaminant
   calibration_plot = function(reference_metal,trace_metal,clean_sites,dirty_sites,calibration_sites=F){
@@ -264,25 +274,49 @@ with(calibration.env,{
       dirty_sites = clean_sites
     }
     
-    
     predicted_PPM = as.data.frame(predict(model,newdata=dirty_sites,interval="prediction"))
+    predicted_PPM = cbind(dirty_sites,predicted_PPM)
     predicted_PPM$Actual = dirty_sites$PPM
     predicted_PPM$Residual = predicted_PPM$Actual - predicted_PPM$fit
+    palette = brewer.pal(n = 11, "Spectral")
     
-    # Tanya's beautiful plot code        
-    return_plot = ggplot(dirty_sites, aes_string(x="PPH", y="PPM"))    +
-      geom_segment(aes_string(xend = "PPH", yend = predicted_PPM$fit))+
-      geom_point()+
-      geom_point(aes(y=predicted_PPM$fit), shape=1)+
-      geom_smooth(method = "lm", fullrange=TRUE, se = TRUE, color = "lightblue",data=clean_sites)+
-      theme_bw()+
-      xlab(reference_metal)+
-      ylab(trace_metal)+
-      ggtitle("Trace Metal-Reference Metal Plots Overlaid With Reference Element Baseline Relationships")
+    predicted_PPM$Interval = (predicted_PPM$Actual <= predicted_PPM$upr & predicted_PPM$Actual >= predicted_PPM$lwr)
+     
+         # Tanya's beautiful plot code
+         return_pointsPlot = ggplot(dirty_sites, aes_string(x="PPH", y="PPM"))    +
+           geom_point()+
+           geom_smooth(method = "lm", fullrange=TRUE, se = TRUE, color = "black",data=clean_sites)+
+           theme_bw()+
+    geom_line(aes(y = predicted_PPM$lwr), color = "#9E0142", linetype = "dashed")+
+      geom_line(aes(y = predicted_PPM$upr), color = "#9E0142", linetype = "dashed")+
+      geom_point(aes(colour = predicted_PPM$Interval))+
+      scale_colour_manual(name = 'Within Pred. Interval', values = setNames(c("#000000","#3288BD"),c(T, F)))+
+           xlab(reference_metal)+
+           ylab(trace_metal)+
+           ggtitle("Trace Metal-Reference Metal Plots Overlaid With Reference Element Baseline Relationships")
+    
+         
+         
+         
+      residualsPlot = ggplot(predicted_PPM,aes(Actual,Residual)) +
+                 geom_point() +
+                 geom_smooth(method = lm,se=F)+
+                 labs(x = reference_metal, y = "Residuals",title = "Residuals of Calibration")
+               
+         
+         
+      residualsByLat =  ggplot(predicted_PPM,aes(lat,Residual)) +
+                                geom_point() +
+                                geom_smooth(method = lm,se=F)+
+                                labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
+        
+         
     return_data = list()
     return_data[["clean_sites"]] = clean_sites
     return_data[["dirty_sites"]] = dirty_sites
-    return_data[["plot"]] = return_plot
+    return_data[["pointsPlot"]] = return_pointsPlot
+    return_data[["residualsPlot"]] = residualsPlot
+    return_data[["residualsByLat"]] = residualsByLat
     return_data[["model"]] = model
     return(return_data)
     

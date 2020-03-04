@@ -70,12 +70,21 @@ server <- function(input, output, session) {
     tryCatch({calibration_curve = calibration.env$calibration_plot(input$reference_metal,input$trace_metal,clean_sites_normalized,dirty_sites,calibration_sites)},
              error = function(e){
                calibration_curve <<- calibration.env$calibration_plot(input$reference_metal,input$trace_metal,clean_sites,dirty_sites,calibration_sites)
-               calibration_curve[["plot"]]<<- calibration_curve[["plot"]]+labs(caption="NOTE: Could not normalize the baseline relationship. Prediction intervals may be skewed")
+               calibration_curve[["plot"]]<<- calibration_curve[["pointsPlot"]]+labs(caption="NOTE: Could not normalize the baseline relationship. Prediction intervals may be skewed")
              })
 
     output$calibrationPlot = renderPlot({
       
-      plot(calibration_curve[["plot"]])})
+      plot(calibration_curve[["pointsPlot"]])})
+    
+    output$residualsPlot = renderPlot({
+      
+      plot(calibration_curve[["residualsPlot"]])})
+    
+    
+    output$residualsByLat = renderPlot({
+      
+      plot(calibration_curve[["residualsByLat"]])})
     
     
     reference=input$reference_metal
@@ -149,7 +158,7 @@ server <- function(input, output, session) {
   
     
   # select trace metal and contaminant, spit out table with:
-  # mse, residual plot, model summary, map of anthropogenic effect
+  # mse, residual, model summary, map of anthropogenic effect
   # table from the paper (slope, intercept), table 3
   
   

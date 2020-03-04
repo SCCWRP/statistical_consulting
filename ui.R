@@ -27,7 +27,13 @@ ui <- fluidPage(
                          fluidRow(verbatimTextOutput("Click_text")),
                          ),
                 tabPanel("Calibration Curve", 
-                         plotOutput("calibrationPlot")
+                         h3("Calibration Plot"),
+                         plotOutput("calibrationPlot"),
+                         h3("Residual Analysis"),
+                         h4("Residuals By Fit"),
+                         plotOutput("residualsPlot"),
+                         h4("Residuals By Latitude"),
+                         plotOutput("residualsByLat")
                          ),
                 tabPanel("Table", h3("Model Summary"),
                          fluidRow(verbatimTextOutput("TraceModelSummary")),
