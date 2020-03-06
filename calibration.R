@@ -331,10 +331,15 @@ with(calibration.env,{
            geom_smooth(method = lm,se=F)+
            labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
          
-         APByDepth =  ggplot(predicted_PPM2,aes(long,Actual/fit)) +
+         APByLat =  ggplot(predicted_PPM2,aes(lat,Actual/fit)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
+           labs(x = "Lattitude", y = "Correlation",title = "Ratio Actual to Predicted By Latitude")
+         
+         APByLong =  ggplot(predicted_PPM2,aes(long,Actual/fit)) +
+           geom_point() +
+           geom_smooth(method = lm,se=F)+
+           labs(x = "Longitude", y = "Correlation",title = "Ratio Actual to Predicted By Longitude")
          
          
          
@@ -346,7 +351,8 @@ with(calibration.env,{
     return_data[["residualsPlot"]] = residualsPlot
     return_data[["residualsByLat"]] = residualsByLat
     return_data[["residualsByLong"]] = residualsByLong
-    return_data[["APByDepth"]] = APByDepth
+    return_data[["APByLat"]] = APByLat
+    return_data[["APByLong"]] = APByLong
     return_data[["model"]] = model
     return(return_data)
     
