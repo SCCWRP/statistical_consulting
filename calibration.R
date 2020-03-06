@@ -166,6 +166,8 @@ with(calibration.env,{
     normalized_data = normalized_data[normalized_data[[rm_column]]==reference_metal,]
     
     # we're going to iterate through the trace metals, and perform the same analysis on each
+    # !! need to update pred_interval = predict(normal.model[[i]],newdata = normal.data[[i]], interval="prediction",level = 0.99)
+
     names = unique(normalized_data[[tm_column]])
     n = length(names)
     samplesize = rep(0,n)
@@ -296,25 +298,46 @@ with(calibration.env,{
            ggtitle("Trace Metal-Reference Metal Plots Overlaid With Reference Element Baseline Relationships")
     
          
-         
-         
-      residualsPlot = ggplot(predicted_PPM,aes(Actual,Residual)) +
-                 geom_point() +
-                 geom_smooth(method = lm,se=F)+
-                 labs(x = reference_metal, y = "Residuals",title = "Residuals of Calibration")
-               
-         
-         
-      residualsByLat =  ggplot(predicted_PPM,aes(lat,Residual)) +
-        geom_point() +
-        geom_smooth(method = lm,se=F)+
-        labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
       
-      residualsByLong =  ggplot(predicted_PPM,aes(long,Residual)) +
-        geom_point() +
-        geom_smooth(method = lm,se=F)+
-        labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
-        
+       #####
+         
+         
+         predicted_PPM2 = as.data.frame(predict(model,newdata=clean_sites,interval="prediction"))
+         predicted_PPM2 = cbind(clean_sites,predicted_PPM2)
+         predicted_PPM2$Actual = clean_sites$PPM
+         predicted_PPM2$Residual = predicted_PPM2$Actual - predicted_PPM2$fit
+         palette = brewer.pal(n = 11, "Spectral")
+         
+         predicted_PPM2$Interval = (predicted_PPM2$Actual <= predicted_PPM2$upr & predicted_PPM2$Actual >= predicted_PPM2$lwr)
+         
+         
+         
+         
+         
+         residualsPlot = ggplot(predicted_PPM2,aes(PPH,Residual)) +
+           geom_point() +
+           geom_smooth(method = lm,se=F)+
+           labs(x = reference_metal, y = "Residuals",title = "Residuals of Calibration")
+         
+         
+         
+         residualsByLat =  ggplot(predicted_PPM2,aes(lat,Residual)) +
+           geom_point() +
+           geom_smooth(method = lm,se=F)+
+           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
+         
+         residualsByLong =  ggplot(predicted_PPM2,aes(long,Residual)) +
+           geom_point() +
+           geom_smooth(method = lm,se=F)+
+           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
+         
+         APByDepth =  ggplot(predicted_PPM2,aes(long,Actual/fit)) +
+           geom_point() +
+           geom_smooth(method = lm,se=F)+
+           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
+         
+         
+         
          
     return_data = list()
     return_data[["clean_sites"]] = clean_sites
@@ -323,6 +346,7 @@ with(calibration.env,{
     return_data[["residualsPlot"]] = residualsPlot
     return_data[["residualsByLat"]] = residualsByLat
     return_data[["residualsByLong"]] = residualsByLong
+    return_data[["APByDepth"]] = APByDepth
     return_data[["model"]] = model
     return(return_data)
     

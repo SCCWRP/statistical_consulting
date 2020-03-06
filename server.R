@@ -91,6 +91,10 @@ server <- function(input, output, session) {
       
       plot(calibration_curve[["residualsByLong"]])})
     
+    output$APByDepth = renderPlot({
+      
+      plot(calibration_curve[["APByDepth"]])})
+    
     
     reference=input$reference_metal
     
