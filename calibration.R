@@ -282,7 +282,7 @@ with(calibration.env,{
     predicted_PPM$Residual = predicted_PPM$Actual - predicted_PPM$fit
     palette = brewer.pal(n = 11, "Spectral")
     
-    predicted_PPM$Interval = (predicted_PPM$Actual <= predicted_PPM$upr & predicted_PPM$Actual >= predicted_PPM$lwr)
+    predicted_PPM$Interval = (predicted_PPM$Actual <= predicted_PPM$upr) #& predicted_PPM$Actual >= predicted_PPM$lwr)
      
          # Tanya's beautiful plot code
          return_pointsPlot = ggplot(dirty_sites, aes_string(x="PPH", y="PPM"))    +
