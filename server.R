@@ -70,7 +70,8 @@ server <- function(input, output, session) {
     tryCatch({calibration_curve = calibration.env$calibration_plot(input$reference_metal,input$trace_metal,clean_sites_normalized,dirty_sites,calibration_sites)},
              error = function(e){
                calibration_curve <<- calibration.env$calibration_plot(input$reference_metal,input$trace_metal,clean_sites,dirty_sites,calibration_sites)
-               calibration_curve[["plot"]]<<- calibration_curve[["pointsPlot"]]+labs(caption="NOTE: Could not normalize the baseline relationship. Prediction intervals may be skewed")
+               calibration_curve[["pointsPlot"]]<<- calibration_curve[["pointsPlot"]]+labs(caption="NOTE: Could not normalize the baseline relationship. Prediction intervals may be skewed")
+               
              })
 
     output$calibrationPlot = renderPlot({
@@ -105,9 +106,7 @@ server <- function(input, output, session) {
     
     # print out the summary tables
     
-    output$TraceModelSummary = renderPrint({
-      calibration_curve[["model"]]
-    })
+    output$TraceModelSummary = renderPrint({calibration_curve[["model"]]})
     
     output$TraceMetalPredictions = function(){
       predict_vals = predict(calibration_curve[["model"]],newdata = calibration_curve[["dirty_sites"]])
@@ -129,14 +128,14 @@ server <- function(input, output, session) {
     pal <- colorNumeric(
       palette = c("blue"),
       na.color = "red",
-      domain = clean_sites[["PPH"]])
+      domain = calibration_curve$predicted_PPM[["fit"]])
     
     proxy <- leafletProxy("mymap")
 
     proxy %>% setView(lng = -118.16, lat = 33.75, zoom = 7)  %>% #setting the view over ~ center of bight
       clearMarkers() %>%
       addTiles() %>% 
-      addCircleMarkers(data = site_used, lat = ~ lat, lng = ~ long, radius=5, layerId = ~stationid,   fillOpacity = 0.5,color=~pal(site_used[["PPH"]])) %>%
+      addCircleMarkers(data = calibration_curve[["predicted_PPM"]], lat = ~ lat, lng = ~ long, radius=5, layerId = ~stationid,   fillOpacity = 0.5,color=~pal(site_used[["Actual"]])) %>%
       addProviderTiles(providers$CartoDB.Positron)
     
   })

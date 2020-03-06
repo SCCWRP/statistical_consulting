@@ -347,6 +347,7 @@ with(calibration.env,{
     return_data = list()
     return_data[["clean_sites"]] = clean_sites
     return_data[["dirty_sites"]] = dirty_sites
+    return_data[["predicted_PPM"]] = predicted_PPM
     return_data[["pointsPlot"]] = return_pointsPlot
     return_data[["residualsPlot"]] = residualsPlot
     return_data[["residualsByLat"]] = residualsByLat

@@ -25,7 +25,7 @@ ui <- fluidPage(
                            leafletOutput(outputId = "mymap"),
                          ),
                          fluidRow(verbatimTextOutput("Click_text")),
-                         ),
+                         ), 
                 tabPanel("Calibration Curve", 
                          h3("Calibration Plot"),
                          plotOutput("calibrationPlot"),
