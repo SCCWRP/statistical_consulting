@@ -320,16 +320,22 @@ with(calibration.env,{
            labs(x = reference_metal, y = "Residuals",title = "Residuals of Calibration")
          
          
-         
          residualsByLat =  ggplot(predicted_PPM2,aes(lat,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
+           labs(x = "Lattitude", y = "Residuals",title = "Residuals By Latitude") 
          
          residualsByLong =  ggplot(predicted_PPM2,aes(long,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
+           labs(x = "Lattitude", y = "Residuals",title = "Residuals By Longitude") 
+    
+         # New plot for Depth Vs Residuals
+    
+         # residualsByDepth =  ggplot(predicted_PPM2,aes(depth,Residual)) +
+         # geom_point() +
+         # geom_smooth(method = lm,se=F)+
+         # labs(x = "Depth", y = "Residuals",title = "Residuals By Longitude") 
          
          APByLat =  ggplot(predicted_PPM2,aes(lat,Actual/fit)) +
            geom_point() +
