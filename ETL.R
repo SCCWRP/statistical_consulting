@@ -142,10 +142,15 @@
 # 
 #   # information about specific stations where samples come from
 #   station_information = ETL.Extract$b18_stations_list
+# 
 # })
 # 
 # with(ETL.Transform,{
 # 
+#   # depth column
+#   station_completion.trawls = ETL.Extract$station_completion.trawls[c("stationid","depth")]
+#   
+#   
 #   # Only consider test results
 #   chemical_results = chemical_tests[chemical_tests$sampletype=="Result",]
 #   chemical_results = subset(chemical_results, select=-c(sampletype))
@@ -168,6 +173,7 @@
 #                                                                                        percentrecovery))
 # 
 #   # move the following columns to another table (in case they are needed in the future)
+#   
 #   chemical_results.ancilliary_data = subset(chemical_results.sans_unnecessary_ids,select=c(objectid,sampledate,created_date,qualifier,mdl,rl,lab,analysisdate,globalid,created_user,last_edited_user,last_edited_date,qacode,comments))
 # 
 #   chemical_results.without_ancillary_data = subset(chemical_results.sans_unnecessary_ids,select=-c(sampledate,created_date,qualifier,mdl,rl,lab,analysisdate,globalid,created_user,last_edited_user,last_edited_date,qacode,comments))
@@ -211,7 +217,11 @@
 # 
 #   calibration_data_wo_grain = merge(x=chemical_results.final,y=station_information.final,by="stationid")
 #   calibration_data = merge(x=calibration_data_wo_grain,y=ETL.Extract$grain_size,by="stationid")
-# 
+#   
+#   
+#   
+#   
+#   calibration_data = merge(x=calibration_data,y=station_completion.trawls,by="stationid")
 # })
 # 
 # 

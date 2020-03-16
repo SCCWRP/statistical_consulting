@@ -87,6 +87,10 @@ server <- function(input, output, session) {
       
       plot(calibration_curve[["residualsByLat"]])})
     
+    output$residualsByDepth = renderPlot({
+      
+      plot(calibration_curve[["residualsByDepth"]])})
+    
     
     output$residualsByLong = renderPlot({
       

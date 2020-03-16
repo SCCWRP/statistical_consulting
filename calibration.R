@@ -332,16 +332,16 @@ with(calibration.env,{
     
          # New plot for Depth Vs Residuals
     
-         # residualsByDepth =  ggplot(predicted_PPM2,aes(depth,Residual)) +
-         # geom_point() +
-         # geom_smooth(method = lm,se=F)+
-         # labs(x = "Depth", y = "Residuals",title = "Residuals By Longitude") 
+         residualsByDepth =  ggplot(predicted_PPM2,aes(depth,Residual)) +
+         geom_point() +
+         geom_smooth(method = lm,se=F)+
+         labs(x = "Depth", y = "Residuals",title = "Residuals By Depth") 
          
          APByLat =  ggplot(predicted_PPM2,aes(lat,Actual/fit)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Ratio Actual to Predicted By Latitude")
-         
+           labs(x = "Latitude", y = "Correlation",title = "Ratio Actual to Predicted By Latitude")
+
          APByLong =  ggplot(predicted_PPM2,aes(long,Actual/fit)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
@@ -358,6 +358,7 @@ with(calibration.env,{
     return_data[["residualsPlot"]] = residualsPlot
     return_data[["residualsByLat"]] = residualsByLat
     return_data[["residualsByLong"]] = residualsByLong
+    return_data[["residualsByDepth"]] = residualsByDepth
     return_data[["APByLat"]] = APByLat
     return_data[["APByLong"]] = APByLong
     return_data[["model"]] = model
@@ -403,7 +404,7 @@ with(calibration.env,{
 
 with(calibration.env,{
   dataset = ETL.Load$calibration_data
-  
+  dataset$depth[dataset$depth < 0] = 0
   trace_metals = c("Arsenic","Cadmium","Chromium","Copper","Lead","Nickel","Silver","Zinc")
   reference_metals = c("Iron","Aluminum","GrainSize")
   #convert reference metals to pct
@@ -414,8 +415,7 @@ with(calibration.env,{
   
   # for this analysis, we simply need the trace metals and the reference metals.
   
-  dataset = subset(dataset,select=c("stationid","lat","long",reference_metals,trace_metals,"is_contaminated_site","Stratum"))
-  
+  dataset = subset(dataset,select=c("stationid","lat","long","depth",reference_metals,trace_metals,"is_contaminated_site","Stratum"))
   # gather the contaminants so we can perform better analysis
   
   dataset = dataset %>% gather("TraceMetal","PPM",trace_metals)
