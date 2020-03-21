@@ -71,6 +71,7 @@ with(calibration.env,{
     reference_metals = unique(clean_sites[[rm_column]])
     colnames_clean_sites = colnames(clean_sites)
     return_clean_sites = clean_sites[0,]
+    return_new_contaminated_sites = clean_sites[0,]
     
     for (trace_metal in trace_metals){
       for (reference_metal in reference_metals){
@@ -80,6 +81,7 @@ with(calibration.env,{
         selector = (trace_metal_rows + reference_metal_rows)==2
         
         clean_sites_tm_rm = clean_sites[selector,]
+        contaminated_sites_tm_rm = clean_sites[0,]
         
         sw=0
         i=0
@@ -103,14 +105,16 @@ with(calibration.env,{
           clean_sites_tm_rm$residuals = residuals(model) #Store Residuals
           SD2 = 2*sd(clean_sites_tm_rm$residuals)      #Compute 2 sd
           clean_sites_tm_rm$outliers = ifelse(abs(clean_sites_tm_rm$residuals)>SD2, 1, 0)
+          contaminated_sites_tm_rm = rbind(contaminated_sites_tm_rm,clean_sites_tm_rm[clean_sites_tm_rm$outliers == 1,])
           clean_sites_tm_rm = clean_sites_tm_rm [clean_sites_tm_rm$outliers != 1,]
           
         }
         return_clean_sites = rbind(return_clean_sites,clean_sites_tm_rm[,colnames_clean_sites])
+        return_new_contaminated_sites = rbind(return_new_contaminated_sites,contaminated_sites_tm_rm[,colnames_clean_sites])
         
       }}
     
-    return(return_clean_sites)
+    return(list(clean_sites = return_clean_sites,new_contaminated_sites = return_new_contaminated_sites))
     
   }
   
@@ -432,7 +436,9 @@ with(calibration.env,{
   
   
   # [[normalize residuals]]
-  clean_sites_normalized=  normalize_residuals(clean_sites,"ReferenceMetal","PPH","TraceMetal","PPM")
+  sites_normalized = normalize_residuals(clean_sites,"ReferenceMetal","PPH","TraceMetal","PPM")
+  clean_sites_normalized=  sites_normalized$clean_sites
+  dirty_sites = rbind(dirty_sites, sites_normalized$new_contaminated_sites)
   
 })
 
