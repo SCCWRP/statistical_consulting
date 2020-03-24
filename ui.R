@@ -51,7 +51,11 @@ ui <- fluidPage(
                 tabPanel("Overview Table",h3("Normalized Summary"),
                          fluidRow(tableOutput("OverviewTableNormal")),
                          h3("Raw Summary"),
-                         fluidRow(tableOutput("OverviewTableRaw"))
+                         fluidRow(tableOutput("OverviewTableRaw")),
+                         h3("Sediment Summary Statistics"),
+                         fluidRow(tableOutput("SedimentSummaryStatistics")),
+                         h3("Slope Intercept Test"),
+                         fluidRow(tableOutput("SlopeInterceptTest"))
                 )
     ),
 

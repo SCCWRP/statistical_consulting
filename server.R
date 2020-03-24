@@ -13,8 +13,9 @@ server <- function(input, output, session) {
   })
   
 
-    
+  #####################################
   # Reference Metals Overview pageset
+  ######################################
   observeEvent(input$rm_button,{
     hideTab(inputId="tabs",target="Table")
     hideTab(inputId="tabs",target="Calibration Curve")
@@ -30,7 +31,7 @@ server <- function(input, output, session) {
     }
 
 
-    View(clean_sites[clean_sites$ReferenceMetal==reference,])
+
             pal <- colorNumeric(
 
       palette = c("blue"),
@@ -54,12 +55,17 @@ server <- function(input, output, session) {
     kabel_raw = calibration.env$rm_model_summary_kable(reference,clean_sites,"ReferenceMetal","PPH","TraceMetal","PPM")
     kabel_normalized = calibration.env$rm_model_summary_kable(reference,clean_sites_normalized,"ReferenceMetal","PPH","TraceMetal","PPM")
     
-    output$OverviewTableNormal = function(){
-      kabel_normalized
-    }
-    output$OverviewTableRaw = function(){
-      kabel_raw
-    }
+    output$OverviewTableNormal = function(){kabel_normalized}
+    output$OverviewTableRaw = function(){kabel_raw}
+    output$SedimentSummaryStatistics = function(){
+      calibration.env$weightedSedimentSummaryStatistics%>%
+        filter(analyte %in% c(reference,calibration.env$trace_metals))%>%
+        arrange(factor(analyte,levels=c(reference,calibration.env$trace_metals)))%>%
+        kable(format ="html",booktabs = T,escape=F,align="c") %>%
+        kable_styling(position = "center") %>%
+        column_spec(1:8, width = "5cm")
+      
+        }
      
   })
 
