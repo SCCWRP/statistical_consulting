@@ -32,6 +32,8 @@ ui <- fluidPage(
                          h3("Residual Analysis"),
                          h4("Residuals By Fit"),
                          plotOutput("residualsPlot"),
+                         h4("Residuals By Depth"),
+                         plotOutput("residualsByDepth"),
                          h4("Residuals By Latitude"),
                          plotOutput("residualsByLat"),
                          h4("Residuals By Longitude"),

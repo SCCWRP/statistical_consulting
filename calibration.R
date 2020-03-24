@@ -71,6 +71,7 @@ with(calibration.env,{
     reference_metals = unique(clean_sites[[rm_column]])
     colnames_clean_sites = colnames(clean_sites)
     return_clean_sites = clean_sites[0,]
+    return_new_contaminated_sites = clean_sites[0,]
     
     for (trace_metal in trace_metals){
       for (reference_metal in reference_metals){
@@ -80,6 +81,7 @@ with(calibration.env,{
         selector = (trace_metal_rows + reference_metal_rows)==2
         
         clean_sites_tm_rm = clean_sites[selector,]
+        contaminated_sites_tm_rm = clean_sites[0,]
         
         sw=0
         i=0
@@ -103,14 +105,16 @@ with(calibration.env,{
           clean_sites_tm_rm$residuals = residuals(model) #Store Residuals
           SD2 = 2*sd(clean_sites_tm_rm$residuals)      #Compute 2 sd
           clean_sites_tm_rm$outliers = ifelse(abs(clean_sites_tm_rm$residuals)>SD2, 1, 0)
+          contaminated_sites_tm_rm = rbind(contaminated_sites_tm_rm,clean_sites_tm_rm[clean_sites_tm_rm$outliers == 1,])
           clean_sites_tm_rm = clean_sites_tm_rm [clean_sites_tm_rm$outliers != 1,]
           
         }
         return_clean_sites = rbind(return_clean_sites,clean_sites_tm_rm[,colnames_clean_sites])
+        return_new_contaminated_sites = rbind(return_new_contaminated_sites,contaminated_sites_tm_rm[,colnames_clean_sites])
         
       }}
     
-    return(return_clean_sites)
+    return(list(clean_sites = return_clean_sites,new_contaminated_sites = return_new_contaminated_sites))
     
   }
   
@@ -311,31 +315,47 @@ with(calibration.env,{
          predicted_PPM2$Interval = (predicted_PPM2$Actual <= predicted_PPM2$upr & predicted_PPM2$Actual >= predicted_PPM2$lwr)
          
          
+         predicted_PPM2$lwrResid = predicted_PPM2$lwr - predicted_PPM2$fit
+         predicted_PPM2$uprResid = predicted_PPM2$upr - predicted_PPM2$fit
          
          
          
          residualsPlot = ggplot(predicted_PPM2,aes(PPH,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_PPM2$lwrResid), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_PPM2$uprResid), color = "#9E0142",linetype = "dashed")+
            labs(x = reference_metal, y = "Residuals",title = "Residuals of Calibration")
          
          
+         #### Testing Residual Prediction Intervals
+         residual_model = lm(Residual~lat,data=predicted_PPM2)
+         predicted_residual = as.data.frame(predict(residual_model,newdata=predicted_PPM2,interval="prediction"))      
          
          residualsByLat =  ggplot(predicted_PPM2,aes(lat,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Latitude") 
+           geom_line(aes(y = predicted_residual$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual$upr), color = "#9E0142", linetype = "dashed")+
+           labs(x = "Lattitude", y = "Residuals",title = "Residuals By Latitude") 
          
          residualsByLong =  ggplot(predicted_PPM2,aes(long,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Residuals By Longitude") 
+           labs(x = "Lattitude", y = "Residuals",title = "Residuals By Longitude") 
+    
+         # New plot for Depth Vs Residuals
+    
+         residualsByDepth =  ggplot(predicted_PPM2,aes(depth,Residual)) +
+         geom_point() +
+         geom_smooth(method = lm,se=F)+
+         labs(x = "Depth", y = "Residuals",title = "Residuals By Depth") 
          
          APByLat =  ggplot(predicted_PPM2,aes(lat,Actual/fit)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           labs(x = "Lattitude", y = "Correlation",title = "Ratio Actual to Predicted By Latitude")
-         
+           labs(x = "Latitude", y = "Correlation",title = "Ratio Actual to Predicted By Latitude")
+
          APByLong =  ggplot(predicted_PPM2,aes(long,Actual/fit)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
@@ -352,6 +372,7 @@ with(calibration.env,{
     return_data[["residualsPlot"]] = residualsPlot
     return_data[["residualsByLat"]] = residualsByLat
     return_data[["residualsByLong"]] = residualsByLong
+    return_data[["residualsByDepth"]] = residualsByDepth
     return_data[["APByLat"]] = APByLat
     return_data[["APByLong"]] = APByLong
     return_data[["model"]] = model
@@ -397,7 +418,7 @@ with(calibration.env,{
 
 with(calibration.env,{
   dataset = ETL.Load$calibration_data
-  
+  dataset$depth[dataset$depth < 0] = 0
   trace_metals = c("Arsenic","Cadmium","Chromium","Copper","Lead","Nickel","Silver","Zinc")
   reference_metals = c("Iron","Aluminum","GrainSize")
   #convert reference metals to pct
@@ -408,8 +429,7 @@ with(calibration.env,{
   
   # for this analysis, we simply need the trace metals and the reference metals.
   
-  dataset = subset(dataset,select=c("stationid","lat","long",reference_metals,trace_metals,"is_contaminated_site","Stratum"))
-  
+  dataset = subset(dataset,select=c("stationid","lat","long","depth",reference_metals,trace_metals,"is_contaminated_site","Stratum"))
   # gather the contaminants so we can perform better analysis
   
   dataset = dataset %>% gather("TraceMetal","PPM",trace_metals)
@@ -426,7 +446,9 @@ with(calibration.env,{
   
   
   # [[normalize residuals]]
-  clean_sites_normalized=  normalize_residuals(clean_sites,"ReferenceMetal","PPH","TraceMetal","PPM")
+  sites_normalized = normalize_residuals(clean_sites,"ReferenceMetal","PPH","TraceMetal","PPM")
+  clean_sites_normalized=  sites_normalized$clean_sites
+  dirty_sites = rbind(dirty_sites, sites_normalized$new_contaminated_sites)
   
 })
 
