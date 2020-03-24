@@ -315,18 +315,28 @@ with(calibration.env,{
          predicted_PPM2$Interval = (predicted_PPM2$Actual <= predicted_PPM2$upr & predicted_PPM2$Actual >= predicted_PPM2$lwr)
          
          
+         predicted_PPM2$lwrResid = predicted_PPM2$lwr - predicted_PPM2$fit
+         predicted_PPM2$uprResid = predicted_PPM2$upr - predicted_PPM2$fit
          
          
          
          residualsPlot = ggplot(predicted_PPM2,aes(PPH,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_PPM2$lwrResid), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_PPM2$uprResid), color = "#9E0142",linetype = "dashed")+
            labs(x = reference_metal, y = "Residuals",title = "Residuals of Calibration")
          
+         
+         #### Testing Residual Prediction Intervals
+         residual_model = lm(Residual~lat,data=predicted_PPM2)
+         predicted_residual = as.data.frame(predict(residual_model,newdata=predicted_PPM2,interval="prediction"))      
          
          residualsByLat =  ggplot(predicted_PPM2,aes(lat,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_residual$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual$upr), color = "#9E0142", linetype = "dashed")+
            labs(x = "Lattitude", y = "Residuals",title = "Residuals By Latitude") 
          
          residualsByLong =  ggplot(predicted_PPM2,aes(long,Residual)) +
