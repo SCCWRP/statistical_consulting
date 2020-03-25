@@ -319,7 +319,6 @@ with(calibration.env,{
          predicted_PPM2$uprResid = predicted_PPM2$upr - predicted_PPM2$fit
          
          
-         
          residualsPlot = ggplot(predicted_PPM2,aes(PPH,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
@@ -329,19 +328,27 @@ with(calibration.env,{
          
          
          #### Testing Residual Prediction Intervals
-         residual_model = lm(Residual~lat,data=predicted_PPM2)
-         predicted_residual = as.data.frame(predict(residual_model,newdata=predicted_PPM2,interval="prediction"))      
+         residual_model_lat = lm(Residual~lat,data=predicted_PPM2)
+         predicted_residual_lat = as.data.frame(predict(residual_model_lat,newdata=predicted_PPM2,interval="prediction"))    
+         
+         residual_model_long = lm(Residual~long,data=predicted_PPM2)
+         predicted_residual_long = as.data.frame(predict(residual_model_long,newdata=predicted_PPM2,interval="prediction"))      
+         
+         residual_model_depth = lm(Residual~depth,data=predicted_PPM2)
+         predicted_residual_depth = as.data.frame(predict(residual_model_depth,newdata=predicted_PPM2,interval="prediction"))      
          
          residualsByLat =  ggplot(predicted_PPM2,aes(lat,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           geom_line(aes(y = predicted_residual$lwr), color = "#9E0142", linetype = "dashed")+
-           geom_line(aes(y = predicted_residual$upr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_lat$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_lat$upr), color = "#9E0142", linetype = "dashed")+
            labs(x = "Lattitude", y = "Residuals",title = "Residuals By Latitude") 
          
          residualsByLong =  ggplot(predicted_PPM2,aes(long,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_residual_long$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_long$upr), color = "#9E0142", linetype = "dashed")+
            labs(x = "Lattitude", y = "Residuals",title = "Residuals By Longitude") 
     
          # New plot for Depth Vs Residuals
@@ -349,6 +356,8 @@ with(calibration.env,{
          residualsByDepth =  ggplot(predicted_PPM2,aes(depth,Residual)) +
          geom_point() +
          geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_residual_depth$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_depth$upr), color = "#9E0142", linetype = "dashed")+
          labs(x = "Depth", y = "Residuals",title = "Residuals By Depth") 
          
          APByLat =  ggplot(predicted_PPM2,aes(lat,Actual/fit)) +
