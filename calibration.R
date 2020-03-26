@@ -373,10 +373,11 @@ with(calibration.env,{
            geom_smooth(method = lm,se=F)+
            labs(x = "Longitude", y = "Correlation",title = "Ratio Actual to Predicted By Longitude")
     
-         #
+  
         StratumPlot = ggplot(predicted_PPM, aes(x=Stratum,y=Human_Addition))+
           stat_summary(geom = "bar", fun.y = mean, position = "dodge") +
-          stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge")+
+          #stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge")+
+          scale_fill_brewer(palette="Accent")+
           labs(x = "Stratum", y = trace_metal,title = "Anthropogenic Concentration By Stratum")
          
          
