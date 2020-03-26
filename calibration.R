@@ -287,6 +287,9 @@ with(calibration.env,{
     palette = brewer.pal(n = 11, "Spectral")
     
     predicted_PPM$Interval = (predicted_PPM$Actual <= predicted_PPM$upr) #& predicted_PPM$Actual >= predicted_PPM$lwr)
+    predicted_PPM$distance=predicted_PPM$Actual-predicted_PPM$upr
+    predicted_PPM$stationid=dirty_sites$stationid
+    predicted_PPM$Human_Addition=ifelse(predicted_PPM$distance<0,0, predicted_PPM$distance)
      
          # Tanya's beautiful plot code
          return_pointsPlot = ggplot(dirty_sites, aes_string(x="PPH", y="PPM"))    +
@@ -369,6 +372,12 @@ with(calibration.env,{
            geom_point() +
            geom_smooth(method = lm,se=F)+
            labs(x = "Longitude", y = "Correlation",title = "Ratio Actual to Predicted By Longitude")
+    
+         #
+        StratumPlot = ggplot(predicted_PPM, aes(x=Stratum,y=Human_Addition))+
+          stat_summary(geom = "bar", fun.y = mean, position = "dodge") +
+          stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge")+
+          labs(x = "Stratum", y = trace_metal,title = "Anthropogenic Concentration By Stratum")
          
          
          
@@ -385,6 +394,7 @@ with(calibration.env,{
     return_data[["APByLat"]] = APByLat
     return_data[["APByLong"]] = APByLong
     return_data[["model"]] = model
+     return_data[["StratumPlot"]] = StratumPlot
     return(return_data)
     
   }
