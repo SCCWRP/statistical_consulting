@@ -41,7 +41,9 @@ ui <- fluidPage(
                          h4("Ratio Actual to Predicted By Latitude"),
                          plotOutput("APByLat"),
                          h4("Ratio Actual to Predicted By Longitude"),
-                         plotOutput("APByLong")
+                         plotOutput("APByLong"),
+                         h5("Average Trace Metal Concentration By Stratum"),
+                         plotOutput("StratumPLot")
                          ),
                 tabPanel("Table", h3("Model Summary"),
                          fluidRow(verbatimTextOutput("TraceModelSummary")),
