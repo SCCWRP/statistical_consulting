@@ -111,6 +111,8 @@ server <- function(input, output, session) {
     output$APByLat = renderPlot({plot(calibration_curve[["APByLat"]])})
     output$APByLong = renderPlot({plot(calibration_curve[["APByLong"]])})
     
+    output$StratumPlot = renderPlot({plot(calibration_curve[["StratumPlot"]])})
+    
     
     reference=input$reference_metal
     
