@@ -18,6 +18,7 @@ server <- function(input, output, session) {
   ######################################
   observeEvent(input$rm_button,{
     hideTab(inputId="tabs",target="Table")
+    hideTab(inputId="tabs",target="Reference Element Comparison")
     hideTab(inputId="tabs",target="Calibration Curve")
     showTab(inputId="tabs",target="Overview Table")
     hideTab(inputId="tabs",target="Baseline Calibration")
@@ -74,6 +75,7 @@ server <- function(input, output, session) {
   # Trace Metal Overview Pageset
   observeEvent(input$tm_button,{
     showTab(inputId="tabs",target="Table")
+    showTab(inputId="tabs",target="Reference Element Comparison")
     hideTab(inputId="tabs",target="Overview Table")
     showTab(inputId="tabs",target="Baseline Calibration")
     showTab(inputId="tabs",target="Calibration Curve")
