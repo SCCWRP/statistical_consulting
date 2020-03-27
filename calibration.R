@@ -213,6 +213,61 @@ with(calibration.env,{
     
     return(return_kable)
   }
+  
+  normalizer_summary_kable = function(normalized_data,rm_column,rm_value,tm_column,tm_value,calibration_sites = F){
+    names = c(unique(normalized_data[[tm_column]]))
+    n = length(names)
+    
+    iron_sample_size = rep(0,n)
+    iron_r2 = rep(0,n)
+    iron_pval = rep(0,n)
+    
+    aluminum_sample_size = rep(0,n)
+    aluminum_r2 = rep(0,n)
+    aluminum_pval = rep(0,n)
+    
+    grains_sample_size = rep(0,n)
+    grains_r2 = rep(0,n)
+    grains_pval = rep(0,n)
+    
+    for (i in 1:n){
+      subset_data = normalized_data[normalized_data[[tm_column]]==names[i],]
+      iron_subset = subset_data[subset_data[[rm_column]]=="Iron",]
+      aluminum_subset = subset_data[subset_data[[rm_column]]=="Aluminum",]
+      grains_subset = subset_data[subset_data[[rm_column]]=="GrainSize",]
+      
+      formula = paste(tm_value,"~",rm_value)
+      
+      normal_model_iron = summary(lm(formula,data=iron_subset))
+      iron_sample_size[i] = nrow(iron_subset)
+      iron_r2[i] = round(normal_model_iron$r.squared,3)
+      iron_pval[i] = formatC(normal_model_iron$coefficients[2,4],format = "e", digits = 2)
+      
+      if (i==3) {
+        aluminum_sample_size[i] = '-'
+        aluminum_r2[i] = '-'
+        aluminum_pval[i] = '-'
+      }
+      else {
+        normal_model_aluminum = summary(lm(formula,data=aluminum_subset))
+        aluminum_sample_size[i] = nrow(aluminum_subset)
+        aluminum_r2[i] = round(normal_model_aluminum$r.squared,3)
+        aluminum_pval[i] = formatC(normal_model_aluminum$coefficients[2,4],format = "e", digits = 2)
+      }
+      
+      normal_model_grains = summary(lm(formula,data=grains_subset))
+      grains_sample_size[i] = nrow(grains_subset)
+      grains_r2[i] = round(normal_model_grains$r.squared,3)
+      grains_pval[i] = formatC(normal_model_grains$coefficients[2,4],format = "e", digits = 2)
+    }
+    
+    df = as.data.frame(cbind(names,iron_sample_size,aluminum_sample_size,grains_sample_size,iron_r2,aluminum_r2,grains_r2,iron_pval,aluminum_pval,grains_pval))
+    names(df) = c('Trace Metal',rep(c('Iron','Aluminum','Fines'),3))
+    
+    return_kable = kable(df,format="html",booktabs=T,escape=F,align="c") %>%
+      kable_styling(position = "center") %>%
+      add_header_above(c(" ", "Sample Size" = 3, "r-squared" = 3, "p-value" = 3))
+  }
 })
 
 

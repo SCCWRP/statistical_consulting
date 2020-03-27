@@ -20,6 +20,7 @@ server <- function(input, output, session) {
     hideTab(inputId="tabs",target="Table")
     hideTab(inputId="tabs",target="Calibration Curve")
     showTab(inputId="tabs",target="Overview Table")
+    hideTab(inputId="tabs",target="Baseline Calibration")
     reference=input$reference_metal
     
     calibration_sites = input$debug_mode
@@ -74,6 +75,7 @@ server <- function(input, output, session) {
   observeEvent(input$tm_button,{
     showTab(inputId="tabs",target="Table")
     hideTab(inputId="tabs",target="Overview Table")
+    showTab(inputId="tabs",target="Baseline Calibration")
     showTab(inputId="tabs",target="Calibration Curve")
     calibration_sites = input$debug_mode
     
@@ -136,8 +138,8 @@ server <- function(input, output, session) {
       return(kabel)
     }
     
-    
-    
+    normalizer_kable = calibration.env$normalizer_summary_kable(clean_sites_normalized,"ReferenceMetal","PPH","TraceMetal","PPM")
+    output$"NormalizerComparison" = function(){normalizer_kable}
     
     # pal <- colorNumeric(
     #   palette = c("green"),

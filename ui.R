@@ -48,6 +48,10 @@ ui <- fluidPage(
                          h3("Predicted Values"),
                          fluidRow(tableOutput("TraceMetalPredictions"))
                 ),
+                tabPanel("Reference Element Comparison",
+                         h3("Normalizer Comparison"),
+                         fluidRow(tableOutput("NormalizerComparison"))
+                ),
                 tabPanel("Overview Table",h3("Normalized Summary"),
                          fluidRow(tableOutput("OverviewTableNormal")),
                          h3("Raw Summary"),
