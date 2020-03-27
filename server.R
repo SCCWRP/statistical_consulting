@@ -2,16 +2,23 @@
 server <- function(input, output, session) {
   
   # set global data used by the app
+  
+  hideTab(inputId="tabs",target="Table")
+  hideTab(inputId="tabs",target="Reference Element Comparison")
+  hideTab(inputId="tabs",target="Overview Table")
+  hideTab(inputId="tabs",target="Baseline Calibration")
+  hideTab(inputId="tabs",target="Calibration Curve")
+  
   calibration_sites=F
   clean_sites = calibration.env$clean_sites
   clean_sites_normalized = calibration.env$clean_sites_normalized
   dirty_sites = calibration.env$dirty_sites
   #create the map
   output$mymap <- renderLeaflet({
-    leaflet(data) %>% 
-      setView(lng = -118.16, lat = 33.75, zoom = 7) #setting the view over ~ center of bight
+    leaflet() %>% 
+      setView(lng = -118.16, lat = 33.75, zoom = 7) %>% #setting the view over ~ center of bight
+      addProviderTiles(providers$CartoDB.Positron)
   })
-  
 
   #####################################
   # Reference Metals Overview pageset
@@ -44,7 +51,6 @@ server <- function(input, output, session) {
     
     proxy %>% setView(lng = -118.16, lat = 33.75, zoom = 7)  %>% #setting the view over ~ center of bight
       clearMarkers() %>%
-      addTiles() %>% 
       addCircleMarkers(data = site_used, lat = ~ lat, lng = ~ long, layerId = ~stationid, radius=2,  fillOpacity = 0.5,color="black") %>%
       addProviderTiles(providers$CartoDB.Positron)
    
@@ -161,8 +167,7 @@ server <- function(input, output, session) {
 
 
     proxy %>% setView(lng = -118.16, lat = 33.75, zoom = 7)  %>% #setting the view over ~ center of bight
-      clearMarkers() %>%
-      addTiles() %>% 
+      clearMarkers() %>% 
       addCircleMarkers(data = calibration_curve[["predicted_PPM"]], lat = ~ lat, lng = ~ long, radius=5, layerId = ~stationid,   fillOpacity = 0.5,color=~pal(Interval)) %>%
       addProviderTiles(providers$CartoDB.Positron)
     
