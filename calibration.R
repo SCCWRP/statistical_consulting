@@ -378,7 +378,7 @@ with(calibration.env,{
           stat_summary(geom = "bar", fun.y = mean, position = "dodge") +
           #stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge")+
           scale_fill_brewer(palette="Accent")+
-          labs(x = "Stratum", y = trace_metal,title = "Anthropogenic Concentration By Stratum")
+          labs(x = "Stratum", y = trace_metal,title = "Mean Anthropogenic Concentration By Stratum")
          
          
          
