@@ -540,13 +540,10 @@ with(calibration.env,{
   
   
   
-  area_weights = ETL.Extract$station_completion.areas[c("Region...8","Total Area")][1:12,] %>% 
-    filter(`Region...8` != "Bight") %>%
-    rename(stratum = `Region...8`,
-           chemareaweight = `Total Area`)
-  
+
   B18_station = merge(ETL.Extract$station_completion.trawls,ETL.Extract$chemistry_bight.tbl_chemresults,by="stationid") %>%
-    merge(area_weights,by="stratum")
+    merge(ETL.Extract$station_completion.grabs,by="stationid") %>%
+    rename(chemareaweight = `Area Weight All Sites`,stratum = stratum.x) 
   B18_station$result = as.numeric(B18_station$result)
   
   
