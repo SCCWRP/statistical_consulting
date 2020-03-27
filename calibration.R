@@ -213,6 +213,61 @@ with(calibration.env,{
     
     return(return_kable)
   }
+  
+  normalizer_summary_kable = function(normalized_data,rm_column,rm_value,tm_column,tm_value,calibration_sites = F){
+    names = c(unique(normalized_data[[tm_column]]))
+    n = length(names)
+    
+    iron_sample_size = rep(0,n)
+    iron_r2 = rep(0,n)
+    iron_pval = rep(0,n)
+    
+    aluminum_sample_size = rep(0,n)
+    aluminum_r2 = rep(0,n)
+    aluminum_pval = rep(0,n)
+    
+    grains_sample_size = rep(0,n)
+    grains_r2 = rep(0,n)
+    grains_pval = rep(0,n)
+    
+    for (i in 1:n){
+      subset_data = normalized_data[normalized_data[[tm_column]]==names[i],]
+      iron_subset = subset_data[subset_data[[rm_column]]=="Iron",]
+      aluminum_subset = subset_data[subset_data[[rm_column]]=="Aluminum",]
+      grains_subset = subset_data[subset_data[[rm_column]]=="GrainSize",]
+      
+      formula = paste(tm_value,"~",rm_value)
+      
+      normal_model_iron = summary(lm(formula,data=iron_subset))
+      iron_sample_size[i] = nrow(iron_subset)
+      iron_r2[i] = round(normal_model_iron$r.squared,3)
+      iron_pval[i] = formatC(normal_model_iron$coefficients[2,4],format = "e", digits = 2)
+      
+      if (i==3) {
+        aluminum_sample_size[i] = '-'
+        aluminum_r2[i] = '-'
+        aluminum_pval[i] = '-'
+      }
+      else {
+        normal_model_aluminum = summary(lm(formula,data=aluminum_subset))
+        aluminum_sample_size[i] = nrow(aluminum_subset)
+        aluminum_r2[i] = round(normal_model_aluminum$r.squared,3)
+        aluminum_pval[i] = formatC(normal_model_aluminum$coefficients[2,4],format = "e", digits = 2)
+      }
+      
+      normal_model_grains = summary(lm(formula,data=grains_subset))
+      grains_sample_size[i] = nrow(grains_subset)
+      grains_r2[i] = round(normal_model_grains$r.squared,3)
+      grains_pval[i] = formatC(normal_model_grains$coefficients[2,4],format = "e", digits = 2)
+    }
+    
+    df = as.data.frame(cbind(names,iron_sample_size,aluminum_sample_size,grains_sample_size,iron_r2,aluminum_r2,grains_r2,iron_pval,aluminum_pval,grains_pval))
+    names(df) = c('Trace Metal',rep(c('Iron','Aluminum','Fines'),3))
+    
+    return_kable = kable(df,format="html",booktabs=T,escape=F,align="c") %>%
+      kable_styling(position = "center") %>%
+      add_header_above(c(" ", "Sample Size" = 3, "r-squared" = 3, "p-value" = 3))
+  }
 })
 
 
@@ -287,6 +342,9 @@ with(calibration.env,{
     palette = brewer.pal(n = 11, "Spectral")
     
     predicted_PPM$Interval = (predicted_PPM$Actual <= predicted_PPM$upr) #& predicted_PPM$Actual >= predicted_PPM$lwr)
+    predicted_PPM$distance=predicted_PPM$Actual-predicted_PPM$upr
+    predicted_PPM$stationid=dirty_sites$stationid
+    predicted_PPM$Human_Addition=ifelse(predicted_PPM$distance<0,0, predicted_PPM$distance)
      
          # Tanya's beautiful plot code
          return_pointsPlot = ggplot(dirty_sites, aes_string(x="PPH", y="PPM"))    +
@@ -319,7 +377,6 @@ with(calibration.env,{
          predicted_PPM2$uprResid = predicted_PPM2$upr - predicted_PPM2$fit
          
          
-         
          residualsPlot = ggplot(predicted_PPM2,aes(PPH,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
@@ -329,19 +386,27 @@ with(calibration.env,{
          
          
          #### Testing Residual Prediction Intervals
-         residual_model = lm(Residual~lat,data=predicted_PPM2)
-         predicted_residual = as.data.frame(predict(residual_model,newdata=predicted_PPM2,interval="prediction"))      
+         residual_model_lat = lm(Residual~lat,data=predicted_PPM2)
+         predicted_residual_lat = as.data.frame(predict(residual_model_lat,newdata=predicted_PPM2,interval="prediction"))    
+         
+         residual_model_long = lm(Residual~long,data=predicted_PPM2)
+         predicted_residual_long = as.data.frame(predict(residual_model_long,newdata=predicted_PPM2,interval="prediction"))      
+         
+         residual_model_depth = lm(Residual~depth,data=predicted_PPM2)
+         predicted_residual_depth = as.data.frame(predict(residual_model_depth,newdata=predicted_PPM2,interval="prediction"))      
          
          residualsByLat =  ggplot(predicted_PPM2,aes(lat,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
-           geom_line(aes(y = predicted_residual$lwr), color = "#9E0142", linetype = "dashed")+
-           geom_line(aes(y = predicted_residual$upr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_lat$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_lat$upr), color = "#9E0142", linetype = "dashed")+
            labs(x = "Lattitude", y = "Residuals",title = "Residuals By Latitude") 
          
          residualsByLong =  ggplot(predicted_PPM2,aes(long,Residual)) +
            geom_point() +
            geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_residual_long$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_long$upr), color = "#9E0142", linetype = "dashed")+
            labs(x = "Lattitude", y = "Residuals",title = "Residuals By Longitude") 
     
          # New plot for Depth Vs Residuals
@@ -349,6 +414,8 @@ with(calibration.env,{
          residualsByDepth =  ggplot(predicted_PPM2,aes(depth,Residual)) +
          geom_point() +
          geom_smooth(method = lm,se=F)+
+           geom_line(aes(y = predicted_residual_depth$lwr), color = "#9E0142", linetype = "dashed")+
+           geom_line(aes(y = predicted_residual_depth$upr), color = "#9E0142", linetype = "dashed")+
          labs(x = "Depth", y = "Residuals",title = "Residuals By Depth") 
          
          APByLat =  ggplot(predicted_PPM2,aes(lat,Actual/fit)) +
@@ -360,6 +427,12 @@ with(calibration.env,{
            geom_point() +
            geom_smooth(method = lm,se=F)+
            labs(x = "Longitude", y = "Correlation",title = "Ratio Actual to Predicted By Longitude")
+    
+  
+        StratumPlot = ggplot(predicted_PPM, aes(x=Stratum,y=Human_Addition,fill=Stratum))+
+          stat_summary(geom = "bar", fun.y = mean, position = "dodge") +
+          #stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge")+
+          labs(x = "Stratum", y = trace_metal,title = "Mean Anthropogenic Concentration By Stratum")
          
          
          
@@ -376,6 +449,7 @@ with(calibration.env,{
     return_data[["APByLat"]] = APByLat
     return_data[["APByLong"]] = APByLong
     return_data[["model"]] = model
+     return_data[["StratumPlot"]] = StratumPlot
     return(return_data)
     
   }
