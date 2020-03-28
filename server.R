@@ -62,9 +62,11 @@ server <- function(input, output, session) {
     
     kabel_raw = calibration.env$rm_model_summary_kable(reference,clean_sites,"ReferenceMetal","PPH","TraceMetal","PPM")
     kabel_normalized = calibration.env$rm_model_summary_kable(reference,clean_sites_normalized,"ReferenceMetal","PPH","TraceMetal","PPM")
-    
+    kabel_slope_and_intercept = calibration.env$rm_model_summary_kable(reference,clean_sites_normalized,"ReferenceMetal","PPH","TraceMetal","PPM",slope_test=T)
+
     output$OverviewTableNormal = function(){kabel_normalized}
     output$OverviewTableRaw = function(){kabel_raw}
+    output$SlopeInterceptTest = function(){kabel_slope_and_intercept}
     output$SedimentSummaryStatistics = function(){
       calibration.env$weightedSedimentSummaryStatistics%>%
         filter(analyte %in% c(reference,calibration.env$trace_metals))%>%

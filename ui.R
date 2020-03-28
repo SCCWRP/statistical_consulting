@@ -6,7 +6,7 @@ ui <- fluidPage(
     selectInput("reference_metal",
                 label = "Select a Reference metal",
                 choices = calibration.env$reference_metals,
-                selected = calibration.env$reference_metals[2]
+                selected = calibration.env$reference_metals[1]
     ),
     selectInput("trace_metal",
                 label = "Select a Trace Metal",

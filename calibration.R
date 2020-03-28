@@ -132,7 +132,7 @@ with(calibration.env,{
 with(calibration.env,{
   
   
-  rm_model_summary_kable = function(reference_metal,normalized_data,rm_column,rm_value,tm_column,tm_value,calibration_sites = F){
+  rm_model_summary_kable = function(reference_metal,normalized_data,rm_column,rm_value,tm_column,tm_value,calibration_sites = F,slope_test = F){
     ####################################################################################
     # data expected/provided to function
     ####################################################################################
@@ -171,7 +171,7 @@ with(calibration.env,{
     
     # we're going to iterate through the trace metals, and perform the same analysis on each
     # !! need to update pred_interval = predict(normal.model[[i]],newdata = normal.data[[i]], interval="prediction",level = 0.99)
-
+    
     names = unique(normalized_data[[tm_column]])
     n = length(names)
     samplesize = rep(0,n)
@@ -181,7 +181,8 @@ with(calibration.env,{
     sigma = c(rep(0,n))
     slope = c(rep(0,n))
     intercept = c(rep(0,n))
-    
+    metal_sum_of_squares = c(rep(0,n))
+    mean_metal = c(rep(0,n))
     mse = c(rep(0,n))
     fstat = c(rep(0,n))
     
@@ -192,7 +193,9 @@ with(calibration.env,{
       normal_model = summary(lm(formula,data=subset_data))
       min[i] = min(subset_data[[tm_value]])
       max[i] = max(subset_data[[tm_value]])
-      
+
+      metal_sum_of_squares[i] = sum((subset_data[[tm_value]] - mean(subset_data[[tm_value]]))^2)
+      mean_metal[i] = mean(subset_data[[tm_value]])
       slope[i] = round(normal_model$coefficients[2,1],3)
       intercept[i] = round( normal_model$coefficients[1,1],3)
       sigma[i] = 2.576*round(normal_model$sigma,3)
@@ -211,13 +214,81 @@ with(calibration.env,{
       kable_styling(position = "center") %>%
       column_spec(1:8, width = "5cm")
     
+    
+    df$mean_metal = mean_metal
+    df$rm_sum_of_squares = metal_sum_of_squares
+    df$resi_var = (sigma/2.57)^2
+    df$var_slope = df$resi_var/df$rm_sum_of_squares
+    df$var_intercept = df$resi_var*(1/samplesize + df$mean_metal^2/df$rm_sum_of_squares)
+    table_3 <- read_csv("Data/table_3.csv")
+    df = merge(df,table_3,by.x="Reference Metal(% dry) versus",by.y = "reference")
+
+    df$resi_var_1999 = (df$ci_1999/2.57)^2
+    df$var_slope_1999 = df$resi_var_1999/df$rm_sum_of_squares
+    df$var_intercept_1999 = df$resi_var*(1/df$n_1999 + df$mean_metal^2/df$rm_sum_of_squares)
+    df$slope = as.numeric(as.character(df[["Slope  (m)"]]))
+    df$intercept = as.numeric(as.character(df[["intercept (b)"]]))
+    df$slope_equal_z_value = (df$slope - df$slope_1999)/sqrt(df$var_slope+df$var_slope_1999)
+    df$intercept_equal_z_value = (df$intercept - df$intercept_1999)/sqrt(df$var_intercept+df$var_intercept_1999)
+    
+    df$slope_p_val = 2*(1-pnorm(abs(df$slope_equal_z_value)))
+    df$intercept_p_val = 2*(1-pnorm(abs(df$intercept_equal_z_value)))
+    
+    
+    
+    
+    df = df[c("Reference Metal(% dry) versus","slope","intercept","slope_1999","intercept_1999","slope_p_val","intercept_p_val")]
+    names(df) = c("Trace Metal","Slope (2018)","Intercept (2018)","Slope (1999)","Intercept (1999)","P-Value of Slopes Equal","P-Value of Intercepts Equal")
+    
+    
+    
+    
+    slope_test_kable = kable(df, format ="html",booktabs = T,escape=F,align="c",digits=4) %>%
+      kable_styling(position = "center") %>%
+      column_spec(1:7, width = "5cm")
+
+          
+    if(slope_test){
+      if(reference_metal == "Iron"){
+
+      return(slope_test_kable)
+      }
+      else{
+        df=as.data.frame("No P-value available")
+        names(df) = reference_metal
+        return(kable(df))
+      }
+    }
+    else{
     return(return_kable)
+    }
   }
   
-  normalizer_summary_kable = function(normalized_data,rm_column,rm_value,tm_column,tm_value,calibration_sites = F){
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  normalizer_summary_kable = function(normalized_data,rm_column,rm_value,tm_column,tm_value,calibration_sites = F,return_kable_and_df = F){
     names = c(unique(normalized_data[[tm_column]]))
     n = length(names)
-    
     iron_sample_size = rep(0,n)
     iron_r2 = rep(0,n)
     iron_pval = rep(0,n)
@@ -233,9 +304,9 @@ with(calibration.env,{
     for (i in 1:n){
       subset_data = normalized_data[normalized_data[[tm_column]]==names[i],]
       iron_subset = subset_data[subset_data[[rm_column]]=="Iron",]
+      
       aluminum_subset = subset_data[subset_data[[rm_column]]=="Aluminum",]
       grains_subset = subset_data[subset_data[[rm_column]]=="GrainSize",]
-      
       formula = paste(tm_value,"~",rm_value)
       
       normal_model_iron = summary(lm(formula,data=iron_subset))
@@ -263,10 +334,11 @@ with(calibration.env,{
     
     df = as.data.frame(cbind(names,iron_sample_size,aluminum_sample_size,grains_sample_size,iron_r2,aluminum_r2,grains_r2,iron_pval,aluminum_pval,grains_pval))
     names(df) = c('Trace Metal',rep(c('Iron','Aluminum','Fines'),3))
-    
     return_kable = kable(df,format="html",booktabs=T,escape=F,align="c") %>%
       kable_styling(position = "center") %>%
       add_header_above(c(" ", "Sample Size" = 3, "r-squared" = 3, "p-value" = 3))
+    
+    
   }
 })
 
