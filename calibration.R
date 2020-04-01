@@ -501,7 +501,8 @@ with(calibration.env,{
            labs(x = "Longitude", y = "Correlation",title = "Ratio Actual to Predicted By Longitude")
     
   
-        StratumPlot = ggplot(predicted_PPM, aes(x=Stratum,y=Human_Addition,fill=Stratum))+
+        
+     StratumPlot = ggplot(predicted_PPM, mapping = aes(x = reorder(Stratum, Human_Addition), Human_Addition,fill=Stratum))+ 
           stat_summary(geom = "bar", fun.y = mean, position = "dodge") +
           #stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge")+
           labs(x = "Stratum", y = trace_metal,title = "Mean Anthropogenic Concentration By Stratum")
