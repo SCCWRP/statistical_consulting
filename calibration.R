@@ -198,7 +198,7 @@ with(calibration.env,{
       var_slope[i] = coefficients(normal_model)[2,2]^2
       var_intercept[i] = coefficients(normal_model)[1,2]^2
       metal_sum_of_squares[i] = sum((subset_data[[tm_value]] - mean(subset_data[[tm_value]]))^2)
-      mean_metal[i] = mean(subset_data[[tm_value]])
+      mean_metal[i] = mean(subset_data[[rm_value]])
       slope[i] = round(normal_model$coefficients[2,1],3)
       intercept[i] = round( normal_model$coefficients[1,1],3)
       sigma[i] = 2.576*round(normal_model$sigma,3)
@@ -250,15 +250,18 @@ with(calibration.env,{
     
     
     
-    df = df[c("Reference Metal(% dry) versus","slope","intercept","slope_1999","intercept_1999","slope_p_val","intercept_p_val")]
-    names(df) = c("Trace Metal","Slope (2018)","Intercept (2018)","Slope (1999)","Intercept (1999)","P-Value of Slopes Equal","P-Value of Intercepts Equal")
+     df = df[c("Reference Metal(% dry) versus","intercept_1999", "intercept", "var_intercept_1999","var_intercept",
+              "slope_1999","slope", "var_slope_1999","var_slope","intercept_p_val","slope_p_val")]
+    
+  names(df) = c("Trace Metal","Intercept (1999)","Intercept (2018)", "Intercept Variance (1999)", "Intercept variance (2018)",
+   "Slope (1999)","Slope (2018)","Slope Variance (1999)","Slope Variance (2018)",  "P-Value of Intercepts","P-Value of Slopes")
     
     
       
     
     slope_test_kable = kable(df, format ="html",booktabs = T,escape=F,align="c",digits=4) %>%
       kable_styling(position = "center") %>%
-      column_spec(1:7, width = "5cm")
+      column_spec(1:11, width = "5cm")
 
           
     if(slope_test){
