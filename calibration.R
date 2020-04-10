@@ -234,9 +234,7 @@ with(calibration.env,{
     df$s_y_1999 = sqrt(df$sst/(df$n_1999 - 1 ))
     df$s_x_1999 = (df$r_1999 * df$s_y_1999)/df$slope_1999
     df$ss_1999 = (df$s_x_1999)^2*(df$n_1999-1)
-    #######################
-    # I believe this should be square
-    #######################
+
     df$var_slope_1999 = (sqrt(df$se_1999/df$ss_1999))^2
     df$var_intercept_1999 = (sqrt(df$se_1999)*(1/df$n_1999 + df$mean_metal^2/df$ss_1999))^2
     df$slope = as.numeric(as.character(df[["Slope  (m)"]]))
@@ -664,7 +662,7 @@ with(calibration.env,{
         Median = median(na.omit(sum_result)),
         Pcnt_10 = quantile(na.omit(sum_result), .1),
         Pcnt_90 = quantile(na.omit(sum_result), .9),
-        total = sum(sum_result)
+        Sum = sum(denominator)
       ) %>% 
       mutate(
         analyteclass = rep('Fines %')
@@ -691,7 +689,9 @@ with(calibration.env,{
         Max = max(na.omit(result)),
         Median = median(na.omit(result)),
         Pcnt_10 = quantile(na.omit(result), .1),
-        Pcnt_90 = quantile(na.omit(result), .9)
+        Pcnt_90 = quantile(na.omit(result), .9),
+        #not so sure about this part. sum(chemareaweight) comes close to the total area but not exact
+        Sum = sum(result *chemareaweight, na.rm =T)
       ) %>% 
       rename(analyte = analytename)
     
@@ -705,14 +705,15 @@ with(calibration.env,{
   
   
 
-  B18_station = merge(ETL.Extract$station_completion.trawls,ETL.Extract$chemistry_bight.tbl_chemresults,by="stationid") %>%
-    merge(ETL.Extract$station_completion.grabs,by="stationid") %>%
-    rename(chemareaweight = `Area Weight All Sites`,stratum = stratum.x) 
+  B18_station = merge(ETL.Extract$chemistry_bight.tbl_chemresults,ETL.Extract$station_completion.grabs,by="stationid") %>%
+   # merge(,by="stationid") %>%
+    filter(sampletype == 'Result') %>%
+    rename(chemareaweight =`Area Weight All Sites`) 
   B18_station$result = as.numeric(B18_station$result)
   
   
   
-  
+  View(B18_station)
   
   
   
