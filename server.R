@@ -131,7 +131,6 @@ server <- function(input, output, session) {
     } else {
       site_used = dirty_sites
     }
-    
     # print out the summary tables
     
     output$TraceModelSummary = renderPrint({calibration_curve[["model"]]})
@@ -149,7 +148,6 @@ server <- function(input, output, session) {
              kable_styling(position = "center")
       return(kabel)
     }
-    
     normalizer_kable = calibration.env$normalizer_summary_kable(clean_sites_normalized,"ReferenceMetal","PPH","TraceMetal","PPM")
     output$"NormalizerComparison" = function(){normalizer_kable}
     
@@ -170,28 +168,26 @@ server <- function(input, output, session) {
 
     proxy %>% setView(lng = -118.16, lat = 33.75, zoom = 7)  %>% #setting the view over ~ center of bight
       clearMarkers() %>% 
-      addCircleMarkers(data = calibration_curve[["predicted_PPM"]], lat = ~ lat, lng = ~ long, radius=5, layerId = ~stationid,   fillOpacity = 0.5,color=~pal(Interval)) %>%
+    addCircleMarkers(data = calibration_curve[["predicted_PPM"]], 
+                     lat = ~ lat, 
+                     lng = ~ long, 
+                     radius=5, 
+                     popup=~paste("<table>",
+                                  "<tr><th>Station: </th><th>",stationid,"</th></tr>",
+                                  "<tr><td>PPM: </td><td>",PPM,"</td></tr>",
+                                  "<tr><td>Stratum: </td><td>",Stratum,"</td></tr>",
+                                  "<tr><td>Latitude: </td><td>",lat,"</td></tr>",
+                                  "<tr><td>Longitude: </td><td>",long,"</td></tr>",
+                                  "<tr><td>Depth: </td><td>",depth,"</td></tr>",
+                                  "</table>"),
+                     label=~stationid,
+                     layerId = ~stationid,
+                     fillOpacity = 0.5,
+                     color=~pal(Interval)) %>%
       addProviderTiles(providers$CartoDB.Positron)
     
   })
   
-  
-  observe({
-    proxy <- leafletProxy("mymap")
-    click<-input$mymap_marker_click
-    if(is.null(click))
-      return()
-    text<-paste(click$id)
-
-    text2 <- "tableInfoHere"
-    proxy%>%
-      clearPopups()%>%
-    addPopups(dat=click,lat= click$lat, lng= click$lng, text)
-    
-    output$Click_text<-renderText({
-      text2
-    })
-  })
   
   
   
