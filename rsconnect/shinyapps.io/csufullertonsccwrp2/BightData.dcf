@@ -5,9 +5,9 @@ account: csufullertonsccwrp2
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1844026
-bundleId: 2933380
+bundleId: 2994371
 url: https://csufullertonsccwrp2.shinyapps.io/BightData/
-when: 1585336580.21348
+when: 1586476152.77278
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: _RData|_Rhistory|.RData

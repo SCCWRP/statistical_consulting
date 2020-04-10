@@ -197,8 +197,8 @@ with(calibration.env,{
       max[i] = max(subset_data[[tm_value]])
       var_slope[i] = coefficients(normal_model)[2,2]^2
       var_intercept[i] = coefficients(normal_model)[1,2]^2
-      metal_sum_of_squares[i] = sum((subset_data[[tm_value]] - mean(subset_data[[tm_value]]))^2)
-      mean_metal[i] = mean(subset_data[[tm_value]])
+      metal_sum_of_squares[i] = sum((subset_data[[rm_value]] - mean(subset_data[[rm_value]]))^2)
+      mean_metal[i] = mean(subset_data[[rm_value]])
       slope[i] = round(normal_model$coefficients[2,1],3)
       intercept[i] = round( normal_model$coefficients[1,1],3)
       sigma[i] = 2.576*round(normal_model$sigma,3)
