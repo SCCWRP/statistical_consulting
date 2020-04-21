@@ -432,18 +432,46 @@ with(calibration.env,{
     predicted_PPM$stationid=dirty_sites$stationid
     predicted_PPM$Human_Addition=ifelse(predicted_PPM$distance<0,0, predicted_PPM$distance)
      
-         # Tanya's beautiful plot code
-         return_pointsPlot = ggplot(dirty_sites, aes_string(x="PPH", y="PPM"))    +
-           geom_point()+
-           geom_smooth(method = "lm", fullrange=TRUE, se = TRUE, color = "black",data=clean_sites)+
-           theme_bw()+
-    geom_line(aes(y = predicted_PPM$lwr), color = "#9E0142", linetype = "dashed")+
-      geom_line(aes(y = predicted_PPM$upr), color = "#9E0142", linetype = "dashed")+
-      geom_point(aes(colour = predicted_PPM$Interval))+
-      scale_colour_manual(name = 'Within Pred. Interval', values = setNames(c("#000000","#3288BD"),c(T, F)))+
-           xlab(reference_metal)+
-           ylab(trace_metal)+
-           ggtitle("Trace Metal-Reference Metal Plots Overlaid With Reference Element Baseline Relationships")
+    ##### Tanya 04/21
+    
+    #Data frame for clean shelf sites data
+    clean_sites$Set = 1
+    
+    #Data frame for contaminated sites data
+    dirty_sites$Set = 2
+    
+    #Prediction intervals for our model
+    model_pi = cbind(clean_sites, predict(model, interval = "prediction"))
+    model_pi$Actual = clean_sites$PPM
+    model_pi$Interval = (model_pi$Actual<=model_pi$upr & model_pi$Actual>=model_pi$lwr) 
+    
+    #Prediction intervals for our test data
+    predicted_PPM3 = as.data.frame(predict(model, newdata=dirty_sites, interval="prediction"))
+    predicted_PPM3$Actual = dirty_sites$PPM
+    predicted_PPM3$Redisual = predicted_PPM$Actual-predicted_PPM$fit
+    predicted_PPM3$Interval = (predicted_PPM$Actual<=predicted_PPM$upr & predicted_PPM$Actual>=predicted_PPM$lwr) 
+    predicted_PPM3$Distance = predicted_PPM$Actual-predicted_PPM$upr
+    predicted_PPM3$stationid = dirty_sites$stationid
+    predicted_PPM3$Human_Addition = ifelse(predicted_PPM3$Distance<0, 0, predicted_PPM3$Distance)
+    
+    #Data frame for ALL points (we need this in order to change shape/color)
+    all_sites = rbind(clean_sites, dirty_sites)
+    all_sites$Set = as.factor(all_sites$Set)
+    all_sites$Interval = c(model_pi$Interval, predicted_PPM3$Interval)
+    
+    #Plot linear regression model and prediction interval
+    return_pointsPlot = ggplot(data=all_sites, aes_string(x="PPH", y="PPM", group="Set"), label=rownames(stationid)) + 
+      geom_point(aes(color=Interval, shape=Set)) + 
+      geom_text(data=subset(all_sites, Interval==F), mapping=aes_string(x="PPH", y="PPM", label="stationid"),
+                size=2.5, vjust=-0.5) +
+      geom_smooth(data=clean_sites, method = "lm", fullrange=TRUE, se=FALSE) +
+      geom_line(data=model_pi, aes_string(x="PPH", y="lwr"), color = "blue", linetype = "dashed") +
+      geom_line(data=model_pi, aes_string(x="PPH", y="upr"), color = "blue", linetype = "dashed") +
+      scale_color_discrete(name='Within P.I.') +
+      scale_shape_discrete(name='Data Set', labels= c("Clean", "Test")) +
+      ggtitle("Trace Metal and Reference Element Calibration Plot")
+    
+      #####
     
          
       
